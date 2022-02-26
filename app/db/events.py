@@ -2,7 +2,7 @@ import asyncpg
 from fastapi import FastAPI
 from loguru import logger
 
-from core.settings.app import AppSettings
+from app.core.settings.app import AppSettings
 
 
 async def connect_to_db(app: FastAPI, settings: AppSettings) -> None:
