@@ -4,7 +4,6 @@ SELECT id,
        email,
        created_at,
        updated_at,
-       last_login,
        first_name,
        last_name,
        is_project_manager,
@@ -20,7 +19,6 @@ SELECT id,
        email,
        created_at,
        updated_at,
-       last_login,
        first_name,
        last_name,
        is_project_manager,
@@ -42,7 +40,6 @@ UPDATE
     users
 SET username           = :new_username,
     email              = :new_email,
-    last_login         = :new_last_login,
     first_name         = :new_first_name
     last_name          = :new_last_name
     is_project_manager = :new_is_project_manager
