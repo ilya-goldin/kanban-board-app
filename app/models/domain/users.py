@@ -1,29 +1,33 @@
-from datetime import datetime
-
+from app.models.common import DateTimeModelMixin, IDModelMixin
 from app.models.domain.rwmodel import RWModel
-from app.services import security
 
 
 class User(RWModel):
     username: str
     email: str
-    created_at: datetime
-    last_login: datetime
     first_name: str
     last_name: str
-    is_project_manager: bool
+    is_project_manager: bool = False
     photo: str | None
-    team: str
-    role: str
 
 
-class UserInDB(User):
-    salt: str = ""
-    hashed_password: str = ""
+class UserInDB(IDModelMixin, DateTimeModelMixin, User):
+    ...
 
-    def check_password(self, password: str) -> bool:
-        return security.verify_password(self.salt + password, self.hashed_password)
 
-    def change_password(self, password: str) -> None:
-        self.salt = security.generate_salt()
-        self.hashed_password = security.get_password_hash(self.salt + password)
+class Team(RWModel):
+    id: int
+    team_name: str
+
+
+class TeamInDB(IDModelMixin, DateTimeModelMixin, Team):
+    ...
+
+
+class Role(RWModel):
+    id: int
+    role_name: str
+
+
+class RoleInDB(IDModelMixin, DateTimeModelMixin, Role):
+    ...
