@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from app.models.schemas.base import BaseSchema
 
 
-class Team(BaseModel):
+class Team(BaseSchema):
     id: int
     team_name = str
 
