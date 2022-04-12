@@ -3,21 +3,33 @@ from pydantic import EmailStr
 from app.models.schemas.base import BaseSchema
 
 
-class UserBase(BaseSchema):
+class User(BaseSchema):
     username: str
-    email: EmailStr | None = None
+    email: EmailStr
     first_name: str
     last_name: str
 
 
-class UserCreate(UserBase):
+class UserInLogin(BaseSchema):
     email: EmailStr
     password: str
 
 
-class UserUpdate(UserBase):
+class UserInCreate(User):
+    password: str
+
+
+class UserInUpdate(BaseSchema):
+    username: str | None = None
+    email: str | None = None
     password: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
 
 
-class UserOut(UserBase):
-    pass
+class UserWithToken(User):
+    token: str
+
+
+class UserInResponse(BaseSchema):
+    user: UserWithToken
