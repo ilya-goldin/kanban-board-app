@@ -14,3 +14,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def generate_password(plain_password: str) -> tuple[str, str]:
+    salt = generate_salt()
+    hashed_password = get_password_hash(salt + plain_password)
+    return salt, hashed_password
