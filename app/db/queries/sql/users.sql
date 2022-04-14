@@ -35,8 +35,8 @@ LIMIT 1;
 
 
 -- name: create-new-user<!
-INSERT INTO users (username, email, hashed_password, salt, first_name, last_name, is_project_manager, photo)
-VALUES (:username, :email, :hashed_password, :salt, :first_name, :last_name, :is_project_manager, :photo)
+INSERT INTO users (username, email, hashed_password, salt, first_name, last_name, photo)
+VALUES (:username, :email, :hashed_password, :salt, :first_name, :last_name, :photo)
 RETURNING
     id, username, email, first_name, last_name, is_active, is_project_manager, photo, created_at, updated_at;
 
@@ -50,8 +50,6 @@ SET username           = :new_username,
     salt               = :salt,
     first_name         = :new_first_name,
     last_name          = :new_last_name,
-    is_active          = :new_is_active,
-    is_project_manager = :new_is_project_manager,
     photo              = :photo
 WHERE username = :username
 RETURNING
