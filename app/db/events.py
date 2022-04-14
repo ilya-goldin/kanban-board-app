@@ -6,7 +6,7 @@ from app.core.settings.app import AppSettings
 
 
 async def connect_to_db(app: FastAPI, settings: AppSettings) -> None:
-    logger.info("Connecting to {0}", repr(settings.database_url))
+    logger.info('Connecting to PostgreSQL')
 
     app.state.pool = await asyncpg.create_pool(
         str(settings.database_url),
@@ -15,12 +15,12 @@ async def connect_to_db(app: FastAPI, settings: AppSettings) -> None:
         command_timeout=60,
     )
 
-    logger.info("Connection established")
+    logger.info('Connection established')
 
 
 async def close_db_connection(app: FastAPI) -> None:
-    logger.info("Closing connection to database")
+    logger.info('Closing connection to database')
 
     await app.state.pool.close()
 
-    logger.info("Connection closed")
+    logger.info('Connection closed')
