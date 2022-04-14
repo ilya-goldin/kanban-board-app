@@ -2,10 +2,13 @@
 SELECT id,
        username,
        email,
+       hashed_password,
+       salt,
        created_at,
        updated_at,
        first_name,
        last_name,
+       is_active,
        is_project_manager,
        photo
 FROM users
@@ -17,10 +20,13 @@ LIMIT 1;
 SELECT id,
        username,
        email,
+       hashed_password,
+       salt,
        created_at,
        updated_at,
        first_name,
        last_name,
+       is_active,
        is_project_manager,
        photo
 FROM users
@@ -29,10 +35,10 @@ LIMIT 1;
 
 
 -- name: create-new-user<!
-INSERT INTO users (username, email, first_name, last_name, is_project_manager, photo)
-VALUES (:username, :email, :first_name, :last_name, :is_project_manager, :photo)
+INSERT INTO users (username, email, hashed_password, salt, first_name, last_name, is_project_manager, photo)
+VALUES (:username, :email, :hashed_password, :salt, :first_name, :last_name, :is_project_manager, :photo)
 RETURNING
-    id, created_at, updated_at;
+    id, username, email, first_name, last_name, is_active, is_project_manager, photo, created_at, updated_at;
 
 
 -- name: update-user-by-username<!
@@ -40,10 +46,13 @@ UPDATE
     users
 SET username           = :new_username,
     email              = :new_email,
-    first_name         = :new_first_name
-    last_name          = :new_last_name
-    is_project_manager = :new_is_project_manager
-    photo              = :new_photo
+    hashed_password    = :hashed_password,
+    salt               = :salt,
+    first_name         = :new_first_name,
+    last_name          = :new_last_name,
+    is_active          = :new_is_active,
+    is_project_manager = :new_is_project_manager,
+    photo              = :photo
 WHERE username = :username
 RETURNING
-    updated_at;
+    username, email, first_name, last_name, is_active, is_project_manager, photo, created_at, updated_at;
