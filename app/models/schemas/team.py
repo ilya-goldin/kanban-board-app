@@ -2,10 +2,12 @@ from app.models.schemas.base import BaseSchema
 
 
 class Team(BaseSchema):
-    id: int
-    team_name = str
+    team_name: str
 
 
-class TeamOut(Team):
-    class Config:
-        orm_mode = True
+class TeamInCreate(Team):
+    ...
+
+
+class TeamInResponse(Team):
+    id_: int
