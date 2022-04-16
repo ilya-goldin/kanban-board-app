@@ -1,7 +1,7 @@
 ```mermaid
 erDiagram
-user {
-    int id
+users {
+    int id PK
     varchar username
     varchar hashed_password
     varchar salt
@@ -10,42 +10,36 @@ user {
     timestamp updated_at
     varchar first_name
     varchar last_name
+    boolean is_active
     boolean is_project_manager
     bytea photo
 }
-team {
-    int id
+teams {
+    int id PK
     varchar team_name
+}
+teams_users {
+    int id PK
+    int team_id FK
+    int user_id FK
+    int creator_id FK
     timestamp created_at
     timestamp updated_at
 }
-role {
-    int id
-    varchar role_name
-    timestamp created_at
-    timestamp updated_at
-}
-team_user_role {
-    int id
-    int team_id
-    int user_id
-    int role_id
-    timestamp created_at
-    timestamp updated_at
-}
-team ||--|{ team_user_role : fk_team
-user ||--|{ team_user_role : fk_user
-role ||--|{ team_user_role : fk_role
-client {
-    int id
+teams_users }o--|| users : fk_creator
+teams ||--|{ teams_users : fk_teams
+users ||--|{ teams_users : fk_users
+
+clients {
+    int id PK
     varchar client_name
-    timestamp created_at
-    timestamp updated_at
 }
-project {
-    int id
+
+projects {
+    int id PK
     varchar project_name
-    int client_id
+    int client_id FK
+    int creator_id FK
     timestamp planned_start_date
     timestamp planned_end_date
     timestamp actual_start_date
@@ -54,43 +48,56 @@ project {
     timestamp created_at
     timestamp updated_at
 }
-project_user {
-    int id
-    int project_id
-    int user_id
+projects }o--|| users : fk_creator
+
+projects_users {
+    int id PK
+    int project_id FK
+    int user_id FK
+    int creator_id FK
     boolean is_responsible
     timestamp created_at
     timestamp updated_at
 }
-project }|--|{ client : fk_client_project
-project_user }|--o{ user : fk_user
-project_user }|--|{ project : fk_project
-task {
-    int id
+projects }|--o| clients : fk_clients_projects
+projects_users }o--o{ users : fk_users
+projects_users }|--|{ projects : fk_projects
+
+projects_users }o--|| users : fk_creator
+
+tasks {
+    int id PK
     varchar task_name
-    int project_id
+    int project_id FK
+    int creator_id FK
     text description
     timestamp start_date
     timestamp end_date
     timestamp created_at
     timestamp updated_at
 }
-project ||--o{ task : fk_project
+tasks }o--|| users : fk_creator
+
+projects ||--o{ tasks : fk_projects
+
 status {
-    int id
+    int id PK
     varchar status_name
+    int creator_id FK
     timestamp created_at
     timestamp updated_at
 }
-task_status_user {
-    int id
-    int task_id
-    int status_id
-    int user_id
+status }o--|| users : fk_creator
+
+tasks_status {
+    int id PK
+    int task_id FK
+    int status_id FK
+    int creator_id FK
     timestamp created_at
     timestamp updated_at
 }
-task_status_user ||--|{ task : fk_task
-task_status_user ||--|{ status : fk_status
-task_status_user ||--|{ user : fk_user
+tasks_status }|--|| tasks : fk_tasks
+tasks_status }|--|| status : fk_status
+tasks_status }|--|| users : fk_users
 ```
