@@ -54,3 +54,36 @@ SET username           = :new_username,
 WHERE username = :username
 RETURNING
     username, email, first_name, last_name, is_active, is_project_manager, photo, created_at, updated_at;
+
+-- name: get_users_by_team
+SELECT u.id,
+       u.username,
+       u.email,
+       u.hashed_password,
+       u.salt,
+       u.created_at,
+       u.updated_at,
+       u.first_name,
+       u.last_name,
+       u.is_active,
+       u.is_project_manager,
+       u.photo
+FROM users u
+INNER JOIN teams_users AS tu
+    ON u.id = tu.user_id
+WHERE tu.team_id = (SELECT teams.id FROM teams WHERE teams.team_name = :team_name);
+
+-- name: get_all_users
+SELECT u.id,
+       u.username,
+       u.email,
+       u.hashed_password,
+       u.salt,
+       u.created_at,
+       u.updated_at,
+       u.first_name,
+       u.last_name,
+       u.is_active,
+       u.is_project_manager,
+       u.photo
+FROM users u;

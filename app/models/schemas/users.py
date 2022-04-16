@@ -37,3 +37,4 @@ class UserInResponse(BaseSchema):
 
 class ListOfUsersInResponse(BaseSchema):
     users: list[User]
+    count_users: int
