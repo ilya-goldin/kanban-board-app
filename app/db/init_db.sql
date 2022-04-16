@@ -1,15 +1,14 @@
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS team CASCADE;
-DROP TABLE IF EXISTS role CASCADE;
-DROP TABLE IF EXISTS team_member CASCADE;
-DROP TABLE IF EXISTS client CASCADE;
-DROP TABLE IF EXISTS project CASCADE;
-DROP TABLE IF EXISTS project_user CASCADE;
-DROP TABLE IF EXISTS task CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
+DROP TABLE IF EXISTS teams_users CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS projects_users CASCADE;
+DROP TABLE IF EXISTS tasks CASCADE;
 DROP TABLE IF EXISTS status CASCADE;
-DROP TABLE IF EXISTS task_status CASCADE;
+DROP TABLE IF EXISTS tasks_status CASCADE;
 
--- user, team and role
+-- user, team
 
 CREATE TABLE users (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -28,31 +27,13 @@ CREATE TABLE users (
 
 CREATE TABLE teams (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    team_name VARCHAR(64) UNIQUE NOT NULL,
-    creator_id INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_creator
-        FOREIGN KEY(creator_id)
-        REFERENCES users(id)
+    team_name VARCHAR(64) UNIQUE NOT NULL
 );
 
-CREATE TABLE roles (
-    id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    role_name VARCHAR(64) UNIQUE NOT NULL,
-    creator_id INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_creator
-        FOREIGN KEY(creator_id)
-        REFERENCES users(id)
-);
-
-CREATE TABLE teams_users_roles (
+CREATE TABLE teams_users (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     team_id INT NOT NULL,
     user_id INT NOT NULL,
-    role_id INT NOT NULL,
     creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -62,26 +43,17 @@ CREATE TABLE teams_users_roles (
     CONSTRAINT fk_team
         FOREIGN KEY(team_id)
         REFERENCES teams(id),
-    CONSTRAINT fk_role
-        FOREIGN KEY(role_id)
-        REFERENCES roles(id),
     CONSTRAINT fk_creator
         FOREIGN KEY(creator_id)
         REFERENCES users(id),
-    UNIQUE(team_id, user_id, role_id)
+    UNIQUE(team_id, user_id)
 );
 
 -- client, projects and tasks
 
 CREATE TABLE clients (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    client_name VARCHAR(64) UNIQUE NOT NULL,
-    creator_id INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_creator
-        FOREIGN KEY(creator_id)
-        REFERENCES users(id)
+    client_name VARCHAR(64) UNIQUE NOT NULL
 );
 
 CREATE TABLE projects (
@@ -149,8 +121,12 @@ CREATE TABLE tasks (
 CREATE TABLE status (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     status_name VARCHAR(128) UNIQUE NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id)
 );
 
 CREATE TABLE tasks_status (
@@ -174,16 +150,15 @@ CREATE TABLE tasks_status (
 --
 
 DROP FUNCTION IF EXISTS update_updated_at_column();
-DROP TRIGGER IF EXISTS update_user_modtime ON users;
-DROP TRIGGER IF EXISTS update_team_modtime ON teams;
-DROP TRIGGER IF EXISTS update_role_modtime ON roles;
-DROP TRIGGER IF EXISTS update_team_member_modtime ON teams_users_roles;
-DROP TRIGGER IF EXISTS update_client_modtime ON clients;
-DROP TRIGGER IF EXISTS update_project_modtime ON projects;
-DROP TRIGGER IF EXISTS update_project_user_modtime ON projects_users;
-DROP TRIGGER IF EXISTS update_task_modtime ON tasks;
+DROP TRIGGER IF EXISTS update_users_modtime ON users;
+DROP TRIGGER IF EXISTS update_teams_modtime ON teams;
+DROP TRIGGER IF EXISTS update_teams_users_modtime ON teams_users;
+DROP TRIGGER IF EXISTS update_clients_modtime ON clients;
+DROP TRIGGER IF EXISTS update_projects_modtime ON projects;
+DROP TRIGGER IF EXISTS update_projects_users_modtime ON projects_users;
+DROP TRIGGER IF EXISTS update_tasks_modtime ON tasks;
 DROP TRIGGER IF EXISTS update_status_modtime ON status;
-DROP TRIGGER IF EXISTS update_task_status_modtime ON tasks_status;
+DROP TRIGGER IF EXISTS update_tasks_status_modtime ON tasks_status;
 
 CREATE FUNCTION update_updated_at_column()
         RETURNS TRIGGER AS
@@ -194,49 +169,43 @@ CREATE FUNCTION update_updated_at_column()
     END;
     $$ language 'plpgsql';
 
-CREATE TRIGGER update_user_modtime
+CREATE TRIGGER update_users_modtime
             BEFORE UPDATE
             ON users
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_team_modtime
+CREATE TRIGGER update_teams_modtime
             BEFORE UPDATE
             ON teams
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_role_modtime
+CREATE TRIGGER update_teams_users_modtime
             BEFORE UPDATE
-            ON roles
+            ON teams_users
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_team_member_modtime
-            BEFORE UPDATE
-            ON teams_users_roles
-            FOR EACH ROW
-        EXECUTE PROCEDURE update_updated_at_column();
-
-CREATE TRIGGER update_client_modtime
+CREATE TRIGGER update_clients_modtime
             BEFORE UPDATE
             ON clients
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_project_modtime
+CREATE TRIGGER update_projects_modtime
             BEFORE UPDATE
             ON projects
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_project_user_modtime
+CREATE TRIGGER update_projects_users_modtime
             BEFORE UPDATE
             ON projects_users
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_task_modtime
+CREATE TRIGGER update_tasks_modtime
             BEFORE UPDATE
             ON tasks
             FOR EACH ROW
@@ -248,7 +217,7 @@ CREATE TRIGGER update_status_modtime
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
-CREATE TRIGGER update_task_status_modtime
+CREATE TRIGGER update_tasks_status_modtime
             BEFORE UPDATE
             ON tasks_status
             FOR EACH ROW
