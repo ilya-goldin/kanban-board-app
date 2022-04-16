@@ -4,7 +4,7 @@ from typing import Dict
 import jwt
 from pydantic import ValidationError
 
-from app.models.domain.user import UserInDB
+from app.models.domain.users import UserInDB
 from app.models.schemas.jwt import JWTMeta, JWTUser
 
 
