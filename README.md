@@ -1,4 +1,6 @@
-# Kanban Board App
-Simple kanban app with board and metrics
+# Project Management App
+Simple project management application with boards, metrics and analytics
 
-[Technical requirements](./docs/technical_requirements.md)
+### Work in progress
+- [Technical requirements](./docs/technical_requirements.md)
+- [Relationship Diagram](./docs/db.md)
