@@ -258,3 +258,4 @@ cython_debug/
 
 /prod.env
 /.idea
+/app/db/init_data.sql
