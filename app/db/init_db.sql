@@ -26,25 +26,34 @@ CREATE TABLE users (
     photo BYTEA
 );
 
-CREATE TABLE team (
+CREATE TABLE teams (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     team_name VARCHAR(64) UNIQUE NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id)
 );
 
-CREATE TABLE role (
+CREATE TABLE roles (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     role_name VARCHAR(64) UNIQUE NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id)
 );
 
-CREATE TABLE team_member (
+CREATE TABLE teams_users_roles (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     team_id INT NOT NULL,
     user_id INT NOT NULL,
     role_id INT NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_user
@@ -52,26 +61,34 @@ CREATE TABLE team_member (
         REFERENCES users(id),
     CONSTRAINT fk_team
         FOREIGN KEY(team_id)
-        REFERENCES team(id),
+        REFERENCES teams(id),
     CONSTRAINT fk_role
         FOREIGN KEY(role_id)
-        REFERENCES role(id),
+        REFERENCES roles(id),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id),
     UNIQUE(team_id, user_id, role_id)
 );
 
 -- client, projects and tasks
 
-CREATE TABLE client (
+CREATE TABLE clients (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     client_name VARCHAR(64) UNIQUE NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id)
 );
 
-CREATE TABLE project (
+CREATE TABLE projects (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     project_name VARCHAR(128) UNIQUE NOT NULL,
     client_id INT NOT NULL,
+    creator_id INT NOT NULL,
     planned_start_date TIMESTAMP,
     planned_end_date TIMESTAMP,
     actual_start_date TIMESTAMP,
@@ -81,31 +98,39 @@ CREATE TABLE project (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_client
         FOREIGN KEY(client_id)
-        REFERENCES client(id)
+        REFERENCES clients(id),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id)
 );
 
-CREATE TABLE project_user (
+CREATE TABLE projects_users (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     project_id INT NOT NULL,
     user_id INT NOT NULL,
     is_responsible BOOLEAN NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_project
         FOREIGN KEY(project_id)
-        REFERENCES project(id),
+        REFERENCES projects(id),
     CONSTRAINT fk_user
         FOREIGN KEY(user_id)
+        REFERENCES users(id),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
         REFERENCES users(id),
     UNIQUE(project_id, user_id)
 );
 
 --
 
-CREATE TABLE task (
+CREATE TABLE tasks (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     task_name VARCHAR(255) NOT NULL,
     project_id INT NOT NULL,
+    creator_id INT NOT NULL,
     description TEXT,
     start_date TIMESTAMP,
     end_date TIMESTAMP,
@@ -113,7 +138,10 @@ CREATE TABLE task (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_project
         FOREIGN KEY(project_id)
-        REFERENCES project(id)
+        REFERENCES projects(id),
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
+        REFERENCES users(id)
 );
 
 --
@@ -125,21 +153,21 @@ CREATE TABLE status (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE task_status (
+CREATE TABLE tasks_status (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     task_id INT NOT NULL,
     status_id INT NOT NULL,
-    user_id INT NOT NULL,
+    creator_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_task
         FOREIGN KEY(task_id)
-        REFERENCES task(id),
+        REFERENCES tasks(id),
     CONSTRAINT fk_status
         FOREIGN KEY(status_id)
         REFERENCES status(id),
-    CONSTRAINT fk_user
-        FOREIGN KEY(user_id)
+    CONSTRAINT fk_creator
+        FOREIGN KEY(creator_id)
         REFERENCES users(id)
 );
 
@@ -147,15 +175,15 @@ CREATE TABLE task_status (
 
 DROP FUNCTION IF EXISTS update_updated_at_column();
 DROP TRIGGER IF EXISTS update_user_modtime ON users;
-DROP TRIGGER IF EXISTS update_team_modtime ON team;
-DROP TRIGGER IF EXISTS update_role_modtime ON role;
-DROP TRIGGER IF EXISTS update_team_member_modtime ON team_member;
-DROP TRIGGER IF EXISTS update_client_modtime ON client;
-DROP TRIGGER IF EXISTS update_project_modtime ON project;
-DROP TRIGGER IF EXISTS update_project_user_modtime ON project_user;
-DROP TRIGGER IF EXISTS update_task_modtime ON task;
+DROP TRIGGER IF EXISTS update_team_modtime ON teams;
+DROP TRIGGER IF EXISTS update_role_modtime ON roles;
+DROP TRIGGER IF EXISTS update_team_member_modtime ON teams_users_roles;
+DROP TRIGGER IF EXISTS update_client_modtime ON clients;
+DROP TRIGGER IF EXISTS update_project_modtime ON projects;
+DROP TRIGGER IF EXISTS update_project_user_modtime ON projects_users;
+DROP TRIGGER IF EXISTS update_task_modtime ON tasks;
 DROP TRIGGER IF EXISTS update_status_modtime ON status;
-DROP TRIGGER IF EXISTS update_task_status_modtime ON task_status;
+DROP TRIGGER IF EXISTS update_task_status_modtime ON tasks_status;
 
 CREATE FUNCTION update_updated_at_column()
         RETURNS TRIGGER AS
@@ -174,43 +202,43 @@ CREATE TRIGGER update_user_modtime
 
 CREATE TRIGGER update_team_modtime
             BEFORE UPDATE
-            ON team
+            ON teams
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_role_modtime
             BEFORE UPDATE
-            ON role
+            ON roles
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_team_member_modtime
             BEFORE UPDATE
-            ON team_member
+            ON teams_users_roles
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_client_modtime
             BEFORE UPDATE
-            ON client
+            ON clients
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_project_modtime
             BEFORE UPDATE
-            ON project
+            ON projects
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_project_user_modtime
             BEFORE UPDATE
-            ON project_user
+            ON projects_users
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
 CREATE TRIGGER update_task_modtime
             BEFORE UPDATE
-            ON task
+            ON tasks
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
 
@@ -222,6 +250,6 @@ CREATE TRIGGER update_status_modtime
 
 CREATE TRIGGER update_task_status_modtime
             BEFORE UPDATE
-            ON task_status
+            ON tasks_status
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
