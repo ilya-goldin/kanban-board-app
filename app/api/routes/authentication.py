@@ -5,8 +5,8 @@ from app.api.dependencies.database import get_repository
 from app.core.config import get_app_settings
 from app.core.settings.app import AppSettings
 from app.db.errors import EntityDoesNotExist
-from app.db.repositories.user import UsersRepository
-from app.models.schemas.user import UserInResponse, UserInCreate, UserWithToken, UserInLogin
+from app.db.repositories.users import UsersRepository
+from app.models.schemas.users import UserInResponse, UserInCreate, UserWithToken, UserInLogin
 from app.resources import strings
 from app.services import jwt
 from app.services.authentication import check_username_is_taken, check_email_is_taken

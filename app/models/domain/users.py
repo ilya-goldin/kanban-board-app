@@ -10,7 +10,7 @@ class User(BaseDomainModel):
     last_name: str
     is_active: bool
     is_project_manager: bool
-    photo: bytes
+    photo: bytes | None
 
 
 class UserInDB(IDModelMixin, DateTimeModelMixin, User):

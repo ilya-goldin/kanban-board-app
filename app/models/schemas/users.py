@@ -33,3 +33,7 @@ class UserWithToken(User):
 
 class UserInResponse(BaseSchema):
     user: UserWithToken
+
+
+class ListOfUsersInResponse(BaseSchema):
+    users: list[User]
