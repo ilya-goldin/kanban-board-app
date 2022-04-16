@@ -1,14 +1,6 @@
-from pydantic import BaseModel, BaseConfig
+from app.models.domain.base import BaseDomainModel
 
 
-def convert_field_to_camel_case(string: str) -> str:
-    return "".join(
-        word if index == 0 else word.capitalize()
-        for index, word in enumerate(string.split("_"))
-    )
-
-
-class BaseSchema(BaseModel):
-    class Config(BaseConfig):
-        allow_population_by_field_name = True
-        alias_generator = convert_field_to_camel_case
+class BaseSchema(BaseDomainModel):
+    class Config(BaseDomainModel.Config):
+        orm_mode = True
